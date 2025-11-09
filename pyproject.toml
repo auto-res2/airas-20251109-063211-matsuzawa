@@ -1,1 +1,24 @@
-# Please list the required python packages.
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+
+[project]
+name = "zest-experiments"
+version = "0.4.0"
+description = "Zero-Shot Beta-Schedule Transfer (ZEST) – experiment suite with baselines"
+requires-python = ">=3.10"
+
+[project.dependencies]
+torch = "*"
+transformers = "*"
+datasets = "*"
+peft = "*"
+accelerate = "*"
+hydra-core = "*"
+wandb = "*"
+optuna = "*"
+matplotlib = "*"
+seaborn = "*"
+pandas = "*"
+scikit-learn = "*"
+scipy = "*"
+pyyaml = "*"

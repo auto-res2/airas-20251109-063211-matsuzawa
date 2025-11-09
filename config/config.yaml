@@ -1,0 +1,62 @@
+defaults:
+  - _self_
+
+# -----------------------------------------------------------------------------
+# Mandatory CLI override (run=<run_id>); kept as '???' so Hydra errors early if
+# the user forgets to specify it.  The *actual* run-specific file is merged in
+# src.train.
+# -----------------------------------------------------------------------------
+run: ???
+
+# Execution mode: 'full' or 'trial'.  Trial overrides are applied in both
+# src.main and src.train so sub-processes inherit the correct settings.
+mode: full
+
+# Where to store checkpoints / artefacts – path is passed from CI pipeline.
+results_dir: outputs
+
+# -----------------------------------------------------------------------------
+# WandB credentials (WANDB_API_KEY expected in env)
+# -----------------------------------------------------------------------------
+wandb:
+  entity: gengaru617-personal
+  project: 251109
+  mode: online  # auto-disabled in trial mode
+
+# -----------------------------------------------------------------------------
+# Default stubs – will be overwritten by each run-config.  They exist solely so
+# other code can access the keys without errors even before merging.
+# -----------------------------------------------------------------------------
+training:
+  epochs: 1
+  global_batch_size: 1
+  gradient_accumulation_steps: 1
+  base_learning_rate: 1.0e-4
+  weight_decay: 0.01
+  betas: [0.9, 0.999]
+  eps: 1.0e-8
+  clip_grad_norm: 1.0
+  schedule:
+    type: cosine
+
+optuna:
+  n_trials: 0
+  direction: maximize
+  search_space: {}
+
+resources:
+  num_gpus: 1
+  seed: 42
+  gpu_tdp_w: 300
+
+# -----------------------------------------------------------------------------
+# Hydra – do NOT create nested time-stamped dirs (handled manually)
+# -----------------------------------------------------------------------------
+hydra:
+  run:
+    dir: .
+  sweep:
+    dir: multirun
+  output_subdir: null
+  job:
+    chdir: false

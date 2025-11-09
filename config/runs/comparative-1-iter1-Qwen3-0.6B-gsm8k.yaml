@@ -1,0 +1,72 @@
+run_id: comparative-1-iter1-Qwen3-0.6B-gsm8k
+method: meta_funsobo
+description: "Meta-FunSoBo baseline – differentiable probe + inner-loop Bayesian optimisation."
+model:
+  name: "Qwen/Qwen3-0.6B"
+  parameter_count: 0.6B
+  dtype: bfloat16
+  gradient_checkpointing: true
+  device_map: "auto"
+  lora:
+    enabled: true
+    rank: 32    # will be tuned via Optuna
+    alpha: 16
+    dropout: 0.1
+    target_modules: ["q_proj", "v_proj", "k_proj", "o_proj"]
+  quantization:
+    scheme: qlora
+    bits: 4
+    group_size: 128
+    double_quant: true
+dataset:
+  name: gsm8k
+  hf_id: openai/gsm8k
+  train_split: train
+  val_split: test
+  max_seq_length: 1024
+  prompt_template: "Q: {question}\nA:"
+training:
+  epochs: 3
+  global_batch_size: 32    # tuned
+  optimizer: adamw
+  betas: [0.9, 0.999]
+  eps: 1.0e-8
+  clip_grad_norm: 1.0
+  base_learning_rate: 2.0e-4    # tuned
+  weight_decay: 0.1
+  schedule:
+    type: meta_funsobo
+    probe_steps: 32
+    inner_loop:
+      n_short_runs: 3
+      steps_per_run: 256
+      bayes_opt:
+        init_points: 8
+        acquisition_fn: expected_improvement
+    parameters: optimised
+  warmup_steps: 0
+optuna:
+  n_trials: 30
+  direction: maximize
+  search_space:
+    lora_rank:
+      type: categorical
+      choices: [16, 32, 64]
+    global_batch_size:
+      type: categorical
+      choices: [16, 32, 64]
+    base_learning_rate:
+      type: loguniform
+      low: 1.0e-5
+      high: 5.0e-4
+    beta_prior_alpha:
+      type: uniform
+      low: 0.5
+      high: 2.0
+    beta_prior_beta:
+      type: uniform
+      low: 0.5
+      high: 2.0
+resources:
+  num_gpus: 8
+  seed: 42

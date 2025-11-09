@@ -1,0 +1,55 @@
+run_id: proposed-iter1-Qwen3-0.6B-gsm8k
+method: zest
+description: "Zero-Shot Beta-Schedule Transfer (ZEST) – learning-rate & weight-decay curves predicted in one forward pass."
+model:
+  name: "Qwen/Qwen3-0.6B"
+  parameter_count: 0.6B
+  dtype: bfloat16
+  gradient_checkpointing: true
+  device_map: "auto"
+  lora:
+    enabled: true
+    rank: 32
+    alpha: 16
+    dropout: 0.1
+    target_modules: ["q_proj", "v_proj", "k_proj", "o_proj"]
+  quantization:
+    scheme: qlora
+    bits: 4
+    group_size: 128
+    double_quant: true
+dataset:
+  name: gsm8k
+  hf_id: openai/gsm8k
+  train_split: train
+  val_split: test
+  max_seq_length: 1024
+  prompt_template: "Q: {question}\nA:"
+  sample_for_fingerprint: 64          # examples used to compute ζ(τ)
+training:
+  epochs: 3
+  global_batch_size: 32
+  gradient_accumulation_steps: 1
+  optimizer: adamw
+  betas: [0.9, 0.999]
+  eps: 1.0e-8
+  clip_grad_norm: 1.0
+  schedule:
+    type: beta_cdf
+    source: zest_hypernetwork
+    hypernetwork_ckpt: checkpoints/zest_hypernet.pt
+    rescale_after_steps: 256
+    sigma_target: 0.1
+    parameters: predicted_at_runtime   # {η₀, λ₀, α, β}
+  warmup_steps: 0
+  max_steps: null
+optuna:
+  n_trials: 0
+  search_space: {}
+resources:
+  num_gpus: 8
+  seed: 42
+embedding:
+  embed_dim: 8205
+  hypernetwork_hidden: [1024]
+  device: cuda
