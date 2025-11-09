@@ -10,6 +10,11 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 try:
     from transformers import BitsAndBytesConfig  # only available with BnB installed
+    # Check if bitsandbytes is actually available
+    import importlib.util
+    _bnb_available = importlib.util.find_spec("bitsandbytes") is not None
+    if not _bnb_available:
+        BitsAndBytesConfig = None  # type: ignore
 except ImportError:  # pragma: no cover – CPU fallback, will not be used on A100
     BitsAndBytesConfig = None  # type: ignore
 
@@ -37,9 +42,11 @@ def _quant_cfg(cfg: DictConfig):
 def load_lm_with_adapters(cfg: DictConfig):
     model_name = cfg.model.name
     quant_cfg = _quant_cfg(cfg)
+    # Use float32 on CPU if CUDA is not available, as bfloat16 may not be supported
+    dtype = torch.bfloat16 if torch.cuda.is_available() else torch.float32
     model = AutoModelForCausalLM.from_pretrained(
         model_name,
-        torch_dtype=torch.bfloat16,
+        torch_dtype=dtype,
         device_map=cfg.model.device_map,
         quantization_config=quant_cfg,
         cache_dir=".cache/",
