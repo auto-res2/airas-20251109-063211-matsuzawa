@@ -23,7 +23,7 @@ results_dir: outputs
 # -----------------------------------------------------------------------------
 wandb:
   entity: gengaru617-personal
-  project: 251109
+  project: "251109"
   mode: online  # auto-disabled in trial mode
 
 # -----------------------------------------------------------------------------
