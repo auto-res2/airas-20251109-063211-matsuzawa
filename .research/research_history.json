@@ -802,7 +802,46 @@
     "iterations": [
       {
         "iteration_id": 1,
-        "method": "Zero-Shot Beta-Schedule Transfer (ZEST)\n1.  Dataset embedding  ζ(τ)\n    a.  Sample 64 train examples.\n    b.  Run a single forward pass of Qwen-3 0.6 B (in 4-bit QLoRA mode, no grads) and record for every token:\n       – final-layer hidden state h_i  (4096-d),\n       – token-level negative log-likelihood ℓ_i.\n    c.  Aggregate with  mean & variance over {h_i} and five summary stats of {ℓ_i} →  4096·2+5 =  8200 dims.\n    d.  Concatenate cheap scalars: log(#train-tokens), gradient-noise proxy σ₀≈Var(ℓ_i), model width, LoRA rank, quant-bits.  Final ζ∈ℝ⁸²⁰⁵.\n2.  Schedule parametrisation\n    Use a 2-parameter Beta-CDF:  s(t;α,β)=B(t;α,β)/B(1;α,β),  t ∈[0,1].\n    Learning rate  η(t)=η₀·s(t;α,β);  weight-decay  λ(t)=λ₀·s(t;α+1,β).\n    This is monotone, always starts high and decays to 0; four real numbers {η₀,λ₀,α,β} fully specify both curves.\n3.  Hyper-network g_φ : ℝ⁸²⁰⁵→ℝ⁴  (2-layer MLP, 1.2 M params) trained on a meta-corpus of 500 historical fine-tuning runs (GSM8K, SVAMP, AG-News, TOOLFormer, etc.).\n    Loss = predicted dev-loss after 3 epochs, differentiated through a 16-step differentiable simulator that uses empirical Fisher & noise models (no full training).\n4.  Zero-shot deployment\n    Given τ: compute ζ(τ) (≈0.04 epoch cost), obtain (η₀,λ₀,α,β)=g_φ(ζ).  Start training once—no BO, no roll-backs.\n5.  On-the-fly variance correction (optional but cheap): after the first 256 optimisation steps, measure actual gradient-noise scale  σ̂.  Rescale both η and λ by (σ_target / σ̂)^½ with σ_target=0.1 (fixed).  One scalar update, no additional runs.\n6.  Lifelong self-update: append (ζ,η₀,λ₀,α,β,dev-acc) after every project and re-train φ nightly."
+        "method": "Zero-Shot Beta-Schedule Transfer (ZEST)\n1.  Dataset embedding  ζ(τ)\n    a.  Sample 64 train examples.\n    b.  Run a single forward pass of Qwen-3 0.6 B (in 4-bit QLoRA mode, no grads) and record for every token:\n       – final-layer hidden state h_i  (4096-d),\n       – token-level negative log-likelihood ℓ_i.\n    c.  Aggregate with  mean & variance over {h_i} and five summary stats of {ℓ_i} →  4096·2+5 =  8200 dims.\n    d.  Concatenate cheap scalars: log(#train-tokens), gradient-noise proxy σ₀≈Var(ℓ_i), model width, LoRA rank, quant-bits.  Final ζ∈ℝ⁸²⁰⁵.\n2.  Schedule parametrisation\n    Use a 2-parameter Beta-CDF:  s(t;α,β)=B(t;α,β)/B(1;α,β),  t ∈[0,1].\n    Learning rate  η(t)=η₀·s(t;α,β);  weight-decay  λ(t)=λ₀·s(t;α+1,β).\n    This is monotone, always starts high and decays to 0; four real numbers {η₀,λ₀,α,β} fully specify both curves.\n3.  Hyper-network g_φ : ℝ⁸²⁰⁵→ℝ⁴  (2-layer MLP, 1.2 M params) trained on a meta-corpus of 500 historical fine-tuning runs (GSM8K, SVAMP, AG-News, TOOLFormer, etc.).\n    Loss = predicted dev-loss after 3 epochs, differentiated through a 16-step differentiable simulator that uses empirical Fisher & noise models (no full training).\n4.  Zero-shot deployment\n    Given τ: compute ζ(τ) (≈0.04 epoch cost), obtain (η₀,λ₀,α,β)=g_φ(ζ).  Start training once—no BO, no roll-backs.\n5.  On-the-fly variance correction (optional but cheap): after the first 256 optimisation steps, measure actual gradient-noise scale  σ̂.  Rescale both η and λ by (σ_target / σ̂)^½ with σ_target=0.1 (fixed).  One scalar update, no additional runs.\n6.  Lifelong self-update: append (ζ,η₀,λ₀,α,β,dev-acc) after every project and re-train φ nightly.",
+        "experimental_design": {
+          "experiment_summary": "The experiment evaluates Zero-Shot Beta-Schedule Transfer (ZEST) for quickly choosing learning-rate and weight-decay schedules when fine-tuning Qwen-3-0.6B with LoRA.  For each new task, ZEST:\n1. samples 64 training examples from GSM8K and passes them once through the frozen 4-bit QLoRA base model;\n2. extracts hidden-state statistics and NLL summaries, concatenates cheap corpus descriptors, and forms an 8 205-dimensional fingerprint  ζ(τ);\n3. feeds ζ(τ) to a light 2-layer MLP hyper-network gφ that outputs four scalars (η₀, λ₀, α, β) defining a Beta-CDF decay curve for both learning rate and weight-decay;\n4. begins fine-tuning immediately with the predicted schedule and optionally rescales it once after 256 optimisation steps based on the observed gradient-noise scale.\n\nThe whole pipeline is compared against Meta-FunSoBo, which first runs a 32-step differentiable probe and then a Bayesian-optimisation loop before launching the final training run.  Both methods are trained/benchmarked for exactly three epochs over GSM8K with identical model, optimiser (AdamW), seed handling and hardware (A100/H200).\n\nWe record dev-set accuracy after three epochs (primary metric) and, for tie-breaking, wall-clock time, GPU hours and energy usage.  Five random seeds are used.  Hyper-parameter search is required only while training gφ; downstream ZEST is hyper-parameter-free.",
+          "evaluation_metrics": [
+            "Dev-set accuracy after 3 epochs",
+            "Wall-clock time",
+            "GPU hours",
+            "Energy (kWh)",
+            "Dev-set accuracy after 3 epochs; equal accuracies broken by wall-clock time."
+          ],
+          "proposed_method": "Zero-Shot Beta-Schedule Transfer (ZEST) learns a hyper-network that maps a task fingerprint to the four parameters defining two coupled Beta-CDF decay curves.  The fingerprint is built from (i) mean and variance of final-layer hidden states, (ii) five summary statistics of token-level negative log likelihoods, and (iii) cheap corpus descriptors (token count, estimated gradient-noise scale, model width, LoRA rank, quantisation bits).  The hyper-network is a 2-layer MLP with ≈1.2 M parameters trained on 500 historical fine-tuning runs through a differentiable simulator that predicts dev loss after limited synthetic training steps.  At deployment the schedule is predicted in a single forward pass that costs less than 0.5 % of one training epoch.  An optional variance-based rescaling after 256 steps corrects for unforeseen noise levels without additional restarts or optimisation loops.",
+          "comparative_methods": [
+            "Meta-FunSoBo"
+          ],
+          "models_to_use": [
+            "Qwen3-0.6B"
+          ],
+          "datasets_to_use": [
+            "gsm8k"
+          ],
+          "hyperparameters_to_search": {
+            "hyper_network_learning_rate": "1e-4-1e-3",
+            "hyper_network_batch_size": "512,1024,2048",
+            "simulator_steps": "8,16,32"
+          }
+        },
+        "experiment_runs": [
+          {
+            "run_id": "proposed-iter1-Qwen3-0.6B-gsm8k",
+            "method_name": "proposed",
+            "model_name": "Qwen3-0.6B",
+            "dataset_name": "gsm8k"
+          },
+          {
+            "run_id": "comparative-1-iter1-Qwen3-0.6B-gsm8k",
+            "method_name": "comparative-1",
+            "model_name": "Qwen3-0.6B",
+            "dataset_name": "gsm8k"
+          }
+        ]
       }
     ]
   }
