@@ -71,8 +71,9 @@ class BetaCDFScheduler(_LRScheduler):
         if hasattr(torch.special, "betainc"):
             res = torch.special.betainc(torch.tensor(a), torch.tensor(b), x)
             return res.to(dtype=x.dtype)
-        # rudimentary fallback via CDF of Beta distribution
-        return torch.distributions.Beta(a, b).cdf(x)
+        # Fallback: use scipy's beta distribution CDF
+        import scipy.stats
+        return torch.tensor(scipy.stats.beta.cdf(x.cpu().numpy(), a, b), dtype=x.dtype, device=x.device)
 
     def _scale(self, i: int, a: float, b: float) -> float:
         t = torch.tensor((i + 1) / self.T, dtype=torch.float32)
