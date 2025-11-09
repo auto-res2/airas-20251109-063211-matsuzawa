@@ -39,6 +39,9 @@ training:
   schedule:
     type: cosine
 
+dataset:
+  eval_max_samples: null
+
 optuna:
   n_trials: 0
   direction: maximize
