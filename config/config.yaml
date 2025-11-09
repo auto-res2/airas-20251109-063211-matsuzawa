@@ -70,6 +70,13 @@ training:
     parameters: null
     beta_alpha: null
     beta_beta: null
+    probe_steps: null
+    inner_loop:
+      n_short_runs: null
+      steps_per_run: null
+      bayes_opt:
+        init_points: null
+        acquisition_fn: null
 
 dataset:
   name: ???
