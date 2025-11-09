@@ -44,11 +44,13 @@ class Preprocessor:
     def _load_raw(self) -> Tuple[Dataset, Dataset]:
         ds_train = load_dataset(
             self.cfg.dataset.hf_id,
+            "main",
             split=self.cfg.dataset.train_split,
             cache_dir=".cache/",
         )
         ds_val = load_dataset(
             self.cfg.dataset.hf_id,
+            "main",
             split=self.cfg.dataset.val_split,
             cache_dir=".cache/",
         )
