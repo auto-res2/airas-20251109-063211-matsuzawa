@@ -375,6 +375,19 @@ def _run_training(cfg: DictConfig, *, log_to_wandb: bool = True) -> float:
     model, tokenizer = load_lm_with_adapters(cfg)
     model.to(device)
 
+    # Enable input gradients for gradient checkpointing to work with LoRA
+    if cfg.model.gradient_checkpointing and cfg.model.lora.enabled:
+        if hasattr(model, 'enable_input_require_grads'):
+            model.enable_input_require_grads()
+        elif hasattr(model, 'base_model') and hasattr(model.base_model, 'enable_input_require_grads'):
+            model.base_model.enable_input_require_grads()
+        else:
+            # Fallback: manually enable for embedding layer
+            def make_inputs_require_grad(module, input, output):
+                output.requires_grad_(True)
+            if hasattr(model, 'get_input_embeddings'):
+                model.get_input_embeddings().register_forward_hook(make_inputs_require_grad)
+
     # -------------------- Data pipeline ----------------------------- #
     prep = Preprocessor(cfg, tokenizer)
     train_loader, val_ds_raw, fp_texts = prep.build()
