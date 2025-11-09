@@ -7,6 +7,9 @@ defaults:
 # src.train.
 # -----------------------------------------------------------------------------
 run: ???
+run_id: ???  # Will be set by run-specific config
+method: ???  # Will be set by run-specific config
+description: ???  # Will be set by run-specific config
 
 # Execution mode: 'full' or 'trial'.  Trial overrides are applied in both
 # src.main and src.train so sub-processes inherit the correct settings.
@@ -27,19 +30,53 @@ wandb:
 # Default stubs – will be overwritten by each run-config.  They exist solely so
 # other code can access the keys without errors even before merging.
 # -----------------------------------------------------------------------------
+model:
+  name: ???
+  parameter_count: ???
+  dtype: ???
+  gradient_checkpointing: false
+  device_map: null
+  lora:
+    enabled: false
+    rank: 8
+    alpha: 16
+    dropout: 0.1
+    target_modules: []
+  quantization:
+    scheme: null
+    bits: null
+    group_size: null
+    double_quant: false
+
 training:
   epochs: 1
   global_batch_size: 1
   gradient_accumulation_steps: 1
   base_learning_rate: 1.0e-4
   weight_decay: 0.01
+  optimizer: adamw
   betas: [0.9, 0.999]
   eps: 1.0e-8
   clip_grad_norm: 1.0
+  warmup_steps: 0
+  max_steps: null
+  max_batches_per_epoch: null
   schedule:
     type: cosine
+    source: null
+    hypernetwork_ckpt: null
+    rescale_after_steps: null
+    sigma_target: null
+    parameters: null
 
 dataset:
+  name: ???
+  hf_id: ???
+  train_split: train
+  val_split: test
+  max_seq_length: 1024
+  prompt_template: ???
+  sample_for_fingerprint: 64
   eval_max_samples: null
 
 optuna:
@@ -51,6 +88,11 @@ resources:
   num_gpus: 1
   seed: 42
   gpu_tdp_w: 300
+
+embedding:
+  embed_dim: 8205
+  hypernetwork_hidden: [1024]
+  device: cuda
 
 # -----------------------------------------------------------------------------
 # Hydra – do NOT create nested time-stamped dirs (handled manually)
