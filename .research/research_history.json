@@ -6,5 +6,82 @@
     "GSM8K elementary math",
     "adaptive learning rate transformer",
     "hyperparameter optimization LLM"
+  ],
+  "research_study_list": [
+    {
+      "title": "QLoRA: Efficient Finetuning of Quantized LLMs"
+    },
+    {
+      "title": "QLoRA: Efficient Finetuning of Quantized LLMs"
+    },
+    {
+      "title": "QA-LoRA: Quantization-Aware Low-Rank Adaptation of Large Language Models"
+    },
+    {
+      "title": "QuanTA: Efficient High-Rank Fine-Tuning of LLMs with Quantum-Informed Tensor Adaptation"
+    },
+    {
+      "title": "Evaluating Quantized Large Language Models"
+    },
+    {
+      "title": "AutoLRS: Automatic Learning-Rate Schedule by Bayesian Optimization on the Fly"
+    },
+    {
+      "title": "Reverse engineering learned optimizers reveals known and novel mechanisms"
+    },
+    {
+      "title": "Mechanic: A Learning Rate Tuner"
+    },
+    {
+      "title": "MoMo: Momentum Models for Adaptive Learning Rates"
+    },
+    {
+      "title": "Where Do Large Learning Rates Lead Us?"
+    },
+    {
+      "title": "A Careful Examination of Large Language Model Performance on Grade School Arithmetic"
+    },
+    {
+      "title": "Language models are multilingual chain-of-thought reasoners"
+    },
+    {
+      "title": "OpenMathInstruct-1: A 1.8 Million Math Instruction Tuning Dataset"
+    },
+    {
+      "title": "OpenMathInstruct-1: A 1.8 Million Math Instruction Tuning Dataset"
+    },
+    {
+      "title": "Evaluating Large Vision-and-Language Models on Children's Mathematical Olympiads"
+    },
+    {
+      "title": "AutoLRS: Automatic Learning-Rate Schedule by Bayesian Optimization on the Fly"
+    },
+    {
+      "title": "On Layer Normalization in the Transformer Architecture"
+    },
+    {
+      "title": "Dynamic Layer Tying for Parameter-Efficient Transformers"
+    },
+    {
+      "title": "Navigating Scaling Laws: Compute Optimality in Adaptive Model Training"
+    },
+    {
+      "title": "On the Variance of the Adaptive Learning Rate and Beyond"
+    },
+    {
+      "title": "Large Language Models to Enhance Bayesian Optimization"
+    },
+    {
+      "title": "Position: Leverage Foundational Models for Black-Box Optimization"
+    },
+    {
+      "title": "Revisiting Zeroth-Order Optimization for Memory-Efficient LLM Fine-Tuning: A Benchmark"
+    },
+    {
+      "title": "Tuning Large Neural Networks via Zero-Shot Hyperparameter Transfer"
+    },
+    {
+      "title": "Hyperparameter Optimization through Neural Network Partitioning"
+    }
   ]
 }
