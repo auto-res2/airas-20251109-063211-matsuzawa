@@ -91,7 +91,25 @@ dataset:
 optuna:
   n_trials: 0
   direction: maximize
-  search_space: {}
+  search_space:
+    lora_rank:
+      type: null
+      choices: null
+    global_batch_size:
+      type: null
+      choices: null
+    base_learning_rate:
+      type: null
+      low: null
+      high: null
+    beta_prior_alpha:
+      type: null
+      low: null
+      high: null
+    beta_prior_beta:
+      type: null
+      low: null
+      high: null
 
 resources:
   num_gpus: 1
