@@ -20,7 +20,6 @@ def main(cfg):
         cfg.optuna.n_trials = 0
         cfg.training.epochs = 1
         cfg.dataset.eval_max_samples = 2
-        cfg.training.max_batches_per_epoch = 2
     elif cfg.mode == "full":
         cfg.wandb.mode = "online"
     else:
