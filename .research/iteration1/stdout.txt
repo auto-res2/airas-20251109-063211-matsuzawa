@@ -1,0 +1,176 @@
+=== [UV SYNC] Start at Sun Nov  9 09:57:04 UTC 2025 ===
+=== [UV SYNC] Finished successfully at Sun Nov  9 09:57:11 UTC 2025 ===
+=== [FULL EXPERIMENT] Start for proposed-iter1-Qwen3-0.6B-gsm8k at Sun Nov  9 09:57:11 UTC 2025 ===
+================  Launcher config  ================
+run: proposed-iter1-Qwen3-0.6B-gsm8k
+run_id: ???
+method: ???
+description: ???
+mode: full
+results_dir: .research/iteration1
+wandb:
+  entity: gengaru617-personal
+  project: '251109'
+  mode: online
+model:
+  name: ???
+  parameter_count: ???
+  dtype: ???
+  gradient_checkpointing: false
+  device_map: null
+  lora:
+    enabled: false
+    rank: 8
+    alpha: 16
+    dropout: 0.1
+    target_modules: []
+  quantization:
+    scheme: null
+    bits: null
+    group_size: null
+    double_quant: false
+training:
+  epochs: 1
+  global_batch_size: 1
+  gradient_accumulation_steps: 1
+  base_learning_rate: 0.0001
+  weight_decay: 0.01
+  optimizer: adamw
+  betas:
+  - 0.9
+  - 0.999
+  eps: 1.0e-08
+  clip_grad_norm: 1.0
+  warmup_steps: 0
+  max_steps: null
+  max_batches_per_epoch: null
+  schedule:
+    type: cosine
+    source: null
+    hypernetwork_ckpt: null
+    rescale_after_steps: null
+    sigma_target: null
+    parameters: null
+    beta_alpha: null
+    beta_beta: null
+dataset:
+  name: ???
+  hf_id: ???
+  train_split: train
+  val_split: test
+  max_seq_length: 1024
+  prompt_template: ???
+  sample_for_fingerprint: 64
+  eval_max_samples: null
+optuna:
+  n_trials: 0
+  direction: maximize
+  search_space: {}
+resources:
+  num_gpus: 1
+  seed: 42
+  gpu_tdp_w: 300
+embedding:
+  embed_dim: 8205
+  hypernetwork_hidden:
+  - 1024
+  device: cuda
+
+====================  Final merged config  ====================
+run: proposed-iter1-Qwen3-0.6B-gsm8k
+run_id: proposed-iter1-Qwen3-0.6B-gsm8k
+method: zest
+description: Zero-Shot Beta-Schedule Transfer (ZEST) – learning-rate & weight-decay
+  curves predicted in one forward pass.
+mode: full
+results_dir: .research/iteration1
+wandb:
+  entity: gengaru617-personal
+  project: '251109'
+  mode: online
+model:
+  name: Qwen/Qwen3-0.6B
+  parameter_count: 0.6B
+  dtype: bfloat16
+  gradient_checkpointing: true
+  device_map: auto
+  lora:
+    enabled: true
+    rank: 32
+    alpha: 16
+    dropout: 0.1
+    target_modules:
+    - q_proj
+    - v_proj
+    - k_proj
+    - o_proj
+  quantization:
+    scheme: qlora
+    bits: 4
+    group_size: 128
+    double_quant: true
+training:
+  epochs: 3
+  global_batch_size: 32
+  gradient_accumulation_steps: 1
+  base_learning_rate: 0.0001
+  weight_decay: 0.01
+  optimizer: adamw
+  betas:
+  - 0.9
+  - 0.999
+  eps: 1.0e-08
+  clip_grad_norm: 1.0
+  warmup_steps: 0
+  max_steps: null
+  max_batches_per_epoch: null
+  schedule:
+    type: beta_cdf
+    source: zest_hypernetwork
+    hypernetwork_ckpt: checkpoints/zest_hypernet.pt
+    rescale_after_steps: 256
+    sigma_target: 0.1
+    parameters: predicted_at_runtime
+    beta_alpha: null
+    beta_beta: null
+dataset:
+  name: gsm8k
+  hf_id: openai/gsm8k
+  train_split: train
+  val_split: test
+  max_seq_length: 1024
+  prompt_template: 'Q: {question}
+
+    A:'
+  sample_for_fingerprint: 64
+  eval_max_samples: null
+optuna:
+  n_trials: 0
+  direction: maximize
+  search_space: {}
+resources:
+  num_gpus: 8
+  seed: 42
+  gpu_tdp_w: 300
+embedding:
+  embed_dim: 8205
+  hypernetwork_hidden:
+  - 1024
+  device: cuda
+
+[2025-11-09 18:58:04,745][transformers.configuration_utils][WARNING] - `torch_dtype` is deprecated! Use `dtype` instead!
+[2025-11-09 18:58:10,204][accelerate.utils.modeling][INFO] - Based on the current allocation process, no modules could be assigned to the following devices due to insufficient memory:
+  - 0: 342626816 bytes required
+  - 1: 311164928 bytes required
+  - 2: 311164928 bytes required
+  - 3: 311164928 bytes required
+  - 4: 311164928 bytes required
+  - 5: 311164928 bytes required
+  - 6: 311164928 bytes required
+These minimum requirements are specific to this allocation attempt and may vary. Consider increasing the available memory for these devices to at least the specified minimum, or adjusting the model config.
+[2025-11-09 18:58:29,366][transformers.utils.generic][WARNING] - `use_cache=True` is incompatible with gradient checkpointing. Setting `use_cache=False`.
+[Epoch 1] Dev accuracy = 0.0220
+[Epoch 2] Dev accuracy = 0.0265
+[Epoch 3] Dev accuracy = 0.0235
+WandB URL: https://wandb.ai/gengaru617-personal/251109/runs/proposed-iter1-Qwen3-0.6B-gsm8k
+=== [FULL EXPERIMENT] PASSED for proposed-iter1-Qwen3-0.6B-gsm8k at Sun Nov  9 11:13:07 UTC 2025 ===
